@@ -1,0 +1,23 @@
+flowchart TD
+    A[User describes a game glitch] --> B[Input Validator]
+
+    B -->|Invalid input| C[Safe Error Message]
+    B -->|Valid input| D[Glitch Classifier]
+
+    D --> E[Knowledge Base Retriever]
+    E --> F[Rank Matching Troubleshooting Records]
+
+    F --> G[Confidence Calculator]
+    G --> H[Diagnosis Generator]
+
+    H --> I{Confidence high enough?}
+
+    I -->|Yes| J[Return Possible Causes and Troubleshooting Steps]
+    I -->|No| K[Request More Details and Show Limited Guidance]
+
+    C --> L[System Logger]
+    J --> L
+    K --> L
+
+    L --> M[Evaluation Results]
+    M --> N[Human Review]
