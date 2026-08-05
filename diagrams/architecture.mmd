@@ -1,23 +1,26 @@
 flowchart TD
-    A[User describes a game glitch] --> B[Input Validator]
+    A[User selects a platform and describes a game glitch] --> B[Input Validator]
 
-    B -->|Invalid input| C[Safe Error Message]
+    B -->|Invalid input| C[Display Safe Error Message]
     B -->|Valid input| D[Glitch Classifier]
 
-    D --> E[Knowledge Base Retriever]
-    E --> F[Rank Matching Troubleshooting Records]
+    D --> E[Load Local Troubleshooting Knowledge Base]
+    E --> F[Retrieve and Rank Matching Records]
 
     F --> G[Confidence Calculator]
     G --> H[Diagnosis Generator]
 
-    H --> I{Confidence high enough?}
+    H --> I{Matching records found?}
 
-    I -->|Yes| J[Return Possible Causes and Troubleshooting Steps]
-    I -->|No| K[Request More Details and Show Limited Guidance]
+    I -->|Yes| J[Return Possible Causes and Recommended Steps]
+    I -->|No| K[Request More Details and Show General Guidance]
 
-    C --> L[System Logger]
-    J --> L
-    K --> L
+    J --> L{Confidence below 60 percent?}
+    L -->|Yes| M[Display Low Confidence Warning]
+    L -->|No| N[Display Standard Investigation Report]
 
-    L --> M[Evaluation Results]
-    M --> N[Human Review]
+    M --> O[Save Investigation Log]
+    N --> O
+    K --> O
+
+    O --> P[Show Retrieval Source IDs]
