@@ -1,142 +1,158 @@
-import random
+from datetime import datetime
+import json
+from pathlib import Path
+
 import streamlit as st
-from logic_utils import (
-    get_range_for_difficulty,
-    parse_guess,
-    check_guess,
-    update_score
+
+from glitch_retriever import build_diagnosis
+
+
+LOG_PATH = Path(__file__).resolve().parent / "logs" / "investigations.jsonl"
+
+SUPPORTED_PLATFORMS = [
+    "PC",
+    "PlayStation",
+    "Xbox",
+    "Nintendo Switch",
+]
+
+
+def save_log(platform, description, result):
+    """Save a structured record of each investigation."""
+    LOG_PATH.parent.mkdir(exist_ok=True)
+
+    log_entry = {
+        "timestamp": datetime.now().isoformat(timespec="seconds"),
+        "platform": platform,
+        "description": description,
+        "status": result.get("status"),
+        "category": result.get("category"),
+        "confidence": result.get("confidence"),
+        "retrieved_source_ids": result.get(
+            "retrieved_source_ids",
+            [],
+        ),
+    }
+
+    with open(LOG_PATH, "a", encoding="utf-8") as file:
+        file.write(json.dumps(log_entry) + "\n")
+
+
+st.set_page_config(
+    page_title="Game Glitch Investigator AI",
+    page_icon="🎮",
+    layout="centered",
 )
 
-st.set_page_config(page_title="Glitchy Guesser", page_icon="🎮")
+st.title("🎮 Game Glitch Investigator AI")
 
-st.title("🎮 Game Glitch Investigator")
-st.caption("An AI-generated guessing game. Something is off.")
-
-st.sidebar.header("Settings")
-
-difficulty = st.sidebar.selectbox(
-    "Difficulty",
-    ["Easy", "Normal", "Hard"],
-    index=1,
+st.write(
+    "Describe a video game problem and the system will retrieve "
+    "matching troubleshooting information, classify the issue, "
+    "and recommend safe next steps."
 )
 
-attempt_limit_map = {
-    "Easy": 6,
-    "Normal": 8,
-    "Hard": 5,
-}
-attempt_limit = attempt_limit_map[difficulty]
-
-low, high = get_range_for_difficulty(difficulty)
-
-st.sidebar.caption(f"Range: {low} to {high}")
-st.sidebar.caption(f"Attempts allowed: {attempt_limit}")
-
-# FIXME: Secret uses wrong range when switching difficulties
-# FIXED: Now uses low, high from difficulty
-if "secret" not in st.session_state:
-    st.session_state.secret = random.randint(low, high) 
-
-# FIXME: Attempts counter starts at wrong number
-# FIXED: Changed from 1 to 0
-if "attempts" not in st.session_state:
-    st.session_state.attempts = 0 
-
-if "score" not in st.session_state:
-    st.session_state.score = 0
-
-if "status" not in st.session_state:
-    st.session_state.status = "playing"
-
-if "history" not in st.session_state:
-    st.session_state.history = []
-
-st.subheader("Make a guess")
-
-# FIXME: Info box shows wrong range
-# FIXED: Uses {low} and {high} instead of hardcoded "1 and 100"
 st.info(
-    f"Guess a number between {low} and {high}. "  
-    f"Attempts left: {attempt_limit - st.session_state.attempts}"
+    "The recommendations are general troubleshooting guidance. "
+    "Back up important save data before making system changes."
 )
 
-with st.expander("Developer Debug Info"):
-    st.write("Secret:", st.session_state.secret)
-    st.write("Attempts:", st.session_state.attempts)
-    st.write("Score:", st.session_state.score)
-    st.write("Difficulty:", difficulty)
-    st.write("History:", st.session_state.history)
-
-raw_guess = st.text_input(
-    "Enter your guess:",
-    key=f"guess_input_{difficulty}"
+platform = st.selectbox(
+    "Gaming platform",
+    SUPPORTED_PLATFORMS,
 )
 
-col1, col2, col3 = st.columns(3)
-with col1:
-    submit = st.button("Submit Guess 🚀")
-with col2:
-    new_game = st.button("New Game 🔁")
-with col3:
-    show_hint = st.checkbox("Show hint", value=True)
+description = st.text_area(
+    "Describe the glitch",
+    placeholder=(
+        "Example: My game crashes every time I launch it "
+        "and closes back to the desktop."
+    ),
+    height=140,
+    max_chars=2000,
+)
 
-# FIXME: New Game uses wrong range
-# FIXED: Uses low, high instead of 1, 100
-if new_game:
-    st.session_state.attempts = 0
-    st.session_state.secret = random.randint(low, high)
-    st.success("New game started.")
-    st.rerun()
+investigate = st.button(
+    "Investigate Glitch",
+    type="primary",
+)
 
-if st.session_state.status != "playing":
-    if st.session_state.status == "won":
-        st.success("You already won. Start a new game to play again.")
+if investigate:
+    result = build_diagnosis(
+        description=description,
+        platform=platform,
+    )
+
+    if result["status"] == "rejected":
+        st.error(result["message"])
+
     else:
-        st.error("Game over. Start a new game to try again.")
-    st.stop()
-
-if submit:
-    st.session_state.attempts += 1
-
-    ok, guess_int, err = parse_guess(raw_guess)
-
-    if not ok:
-        st.session_state.history.append(raw_guess)
-        st.error(err)
-    else:
-        st.session_state.history.append(guess_int)
-
-        if st.session_state.attempts % 2 == 0:
-            secret = str(st.session_state.secret)
-        else:
-            secret = st.session_state.secret
-
-        outcome, message = check_guess(guess_int, secret)
-
-        if show_hint:
-            st.warning(message)
-
-        st.session_state.score = update_score(
-            current_score=st.session_state.score,
-            outcome=outcome,
-            attempt_number=st.session_state.attempts,
+        save_log(
+            platform=platform,
+            description=description,
+            result=result,
         )
 
-        if outcome == "Win":
-            st.balloons()
-            st.session_state.status = "won"
-            st.success(
-                f"You won! The secret was {st.session_state.secret}. "
-                f"Final score: {st.session_state.score}"
+        st.divider()
+        st.subheader("Investigation Report")
+
+        category = result["category"].replace("_", " ").title()
+        confidence = result["confidence"]
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.metric("Issue category", category)
+
+        with col2:
+            st.metric(
+                "Confidence",
+                f"{confidence:.0%}",
             )
-        else:
-            if st.session_state.attempts >= attempt_limit:
-                st.session_state.status = "lost"
-                st.error(
-                    f"Out of attempts! "
-                    f"The secret was {st.session_state.secret}. "
-                    f"Score: {st.session_state.score}"
+
+        if result["possible_causes"]:
+            st.subheader("Possible causes")
+
+            for cause in result["possible_causes"]:
+                st.write(f"- {cause}")
+
+        st.subheader("Recommended steps")
+
+        for number, step in enumerate(
+            result["recommended_steps"],
+            start=1,
+        ):
+            st.write(f"{number}. {step}")
+
+        if result["warning"]:
+            st.warning(result["warning"])
+
+        with st.expander("Retrieval details"):
+            source_ids = result["retrieved_source_ids"]
+
+            if source_ids:
+                st.write(
+                    "Knowledge-base records used:",
+                    source_ids,
+                )
+            else:
+                st.write(
+                    "No matching knowledge-base record was found."
                 )
 
+            st.write(
+                "The diagnosis and recommendations above were "
+                "generated from the retrieved records."
+            )
+
 st.divider()
-st.caption("Built by an AI that claims this code is production-ready.")
+
+with st.expander("Privacy and safety"):
+    st.write(
+        "Do not enter passwords, account credentials, private "
+        "server addresses, or other sensitive information."
+    )
+    st.write(
+        "The system does not delete files, alter settings, or "
+        "access the gaming device directly."
+    )
