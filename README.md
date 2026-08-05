@@ -1,229 +1,563 @@
-# 🎮 Game Glitch Investigator: The Impossible Guesser
+# Game Glitch Investigator AI
 
-## 🚨 The Situation
+## Project Summary
 
-You asked an AI to build a simple "Number Guessing Game" using Streamlit.
-It wrote the code, ran away, and now the game is unplayable. 
+Game Glitch Investigator AI is a Streamlit application that helps users diagnose common video game problems. A user selects a gaming platform and describes a glitch, and the system classifies the issue, retrieves matching troubleshooting records, calculates a confidence score, and returns possible causes and safe recommended steps.
 
-- You can't win.
-- The hints lie to you.
-- The secret number seems to have commitment issues.
+This project matters because game problems are often described in different ways, and users may not know where to begin troubleshooting. The application organizes that process into a clear, repeatable workflow while avoiding destructive actions such as deleting files or changing system settings automatically.
 
-## 🛠️ Setup
+## Original Module Project
 
-1. Install dependencies: `pip install -r requirements.txt`
-2. Run the broken app: `python -m streamlit run app.py`
+The original project was named **GameGlitch**. It was a number-guessing game built with Python and Streamlit that demonstrated user input handling, difficulty levels, scoring, conditional logic, and automated tests.
 
-## 🕵️‍♂️ Your Mission
+For this final project, I preserved the original application as `legacy_game.py`. I then redesigned the repository into an AI-assisted troubleshooting system that uses retrieval, classification, confidence scoring, logging, guardrails, and reliability testing.
 
-1. **Play the game.** Open the "Developer Debug Info" tab in the app to see the secret number. Try to win.
-2. **Find the State Bug.** Why does the secret number change every time you click "Submit"? Ask ChatGPT: *"How do I keep a variable from resetting in Streamlit when I click a button?"*
-3. **Fix the Logic.** The hints ("Higher/Lower") are wrong. Fix them.
-4. **Refactor & Test.** - Move the logic into `logic_utils.py`.
-   - Run `pytest` in your terminal.
-   - Keep fixing until all tests pass!
+## Main Features
 
-## 📝 Document Your Experience
+- Streamlit user interface
+- Platform selection
+- Game-glitch description input
+- Input validation
+- Glitch classification
+- Local troubleshooting knowledge base
+- Retrieval and ranking of matching records
+- Confidence scoring
+- Possible-cause generation
+- Ordered troubleshooting recommendations
+- Low-confidence fallback guidance
+- Investigation logging
+- Privacy and safety warnings
+- Automated reliability tests
 
-### Game Purpose
-The game is a number guessing game where the player selects a difficulty (Easy, Normal, Hard) and tries to guess a secret number within a limited number of attempts. The game tracks the player's score and provides hints (Too High/Too Low) after each guess.
+## AI Feature: Retrieval-Based Troubleshooting
 
-### Bugs Found
+The main AI feature is a retrieval-based troubleshooting workflow.
 
-**Bug 1: Secret Number Wrong Range**
-- **Issue**: On Easy mode, the secret number was 53 (outside the 1-20 range)
-- **Cause**: The secret was stored in session state and not regenerated when difficulty changed
-- **Fix**: Changed `new_game` to use `random.randint(low, high)` instead of `random.randint(1, 100)`
-- **Location**: app.py line ~142
+The system searches the local knowledge base in:
 
-**Bug 2: Attempts Counter Off by One**
-- **Issue**: "Attempts left" showed 1 instead of 6 on Easy mode
-- **Cause**: `st.session_state.attempts` was initialized to 1 instead of 0
-- **Fix**: Changed initialization to `attempts = 0`
-- **Location**: app.py line ~102
+```text
+data/glitch_knowledge.json
+```
 
-**Bug 3: Score Goes Negative**
-- **Issue**: Score could go to -15 after wrong guesses
-- **Cause**: No minimum score check in `update_score` function
-- **Fix**: Added `max(0, new_score)` to prevent negative scores
-- **Location**: logic_utils.py line ~51-56
+Each record contains:
 
-**Bug 4: Info Box Wrong Range**
-- **Issue**: Info box always showed "between 1 and 100"
-- **Cause**: Hardcoded value instead of using difficulty range
-- **Fix**: Changed to `f"Guess a number between {low} and {high}. "`
-- **Location**: app.py line ~119
+- A glitch category
+- Supported platforms
+- Matching keywords
+- A possible cause
+- Recommended troubleshooting steps
+- A risk level
 
-### Fixes Applied
+The user's description is compared with these records. Matches are ranked using keyword, category, and platform information. The retrieved records are then used directly to build the diagnosis and recommendations.
 
-1. **Secret Range Fix**: Updated `new_game` to use `random.randint(low, high)` 
-2. **Attempts Fix**: Changed `st.session_state.attempts = 1` to `= 0`
-3. **Score Fix**: Added `max(0, new_score)` to prevent negative scores
-4. **Info Box Fix**: Changed hardcoded "1 and 100" to `{low} and {high}`
-5. **Refactoring**: Moved all logic functions to `logic_utils.py`
-6. **FIXME Comments**: Added comments documenting bug locations and fixes
-7. **Testing**: Created 13 pytest tests to verify all functionality
+The retrieval feature is integrated into the main application. The system does not simply display stored data beside a generic response. The retrieved records determine the possible causes, recommended steps, confidence score, and source IDs shown in the final report.
 
-## 📸 Demo Walkthrough
+## Supported Issue Categories
 
-Here is a step-by-step walkthrough of a complete game session:
+The current system supports:
 
-### Starting the Game
+- Performance problems
+- Crashing
+- Graphics problems
+- Network problems
+- Audio problems
+- Save-data problems
+- Controller problems
+- Unknown or unsupported issues
 
-1. **Launch the game:**
-   ```bash
-   python3 -m streamlit run app.py
-   Game opens in browser with title "Game Glitch Investigator"
+## Architecture Overview
 
-Sidebar shows: Difficulty = "Normal", Range = "1 to 100", Attempts = 8
+The Mermaid architecture source is stored in:
 
-Select Difficulty - Easy Mode:
+```text
+diagrams/architecture.mmd
+```
 
-User changes difficulty to "Easy" in the sidebar
+The workflow is:
 
-Sidebar updates to: Range = "1 to 20", Attempts allowed = 6
+1. The user selects a platform and describes a game glitch.
+2. The input validator checks whether the description contains enough information.
+3. The classifier identifies the most likely issue category.
+4. The retriever loads the local troubleshooting knowledge base.
+5. Matching records are ranked using platform, category, and keyword matches.
+6. The confidence calculator estimates the strength of the match.
+7. The diagnosis generator creates possible causes and recommended steps.
+8. Low-confidence cases receive a warning or general guidance.
+9. Completed investigations are saved to a structured log.
+10. The interface displays the knowledge-base source IDs used.
 
-Info box shows: "Guess a number between 1 and 20. Attempts left: 6"
+```mermaid
+flowchart TD
+    A[User selects a platform and describes a game glitch] --> B[Input Validator]
 
-Gameplay Walkthrough
-First Guess - Too Low:
+    B -->|Invalid input| C[Display Safe Error Message]
+    B -->|Valid input| D[Glitch Classifier]
 
-User enters guess: "10"
+    D --> E[Load Local Troubleshooting Knowledge Base]
+    E --> F[Retrieve and Rank Matching Records]
 
-Game returns hint: "Too Low 📉 Go LOWER!"
+    F --> G[Confidence Calculator]
+    G --> H[Diagnosis Generator]
 
-Score decreases by 5 points
+    H --> I{Matching records found?}
 
-Attempts left now shows: 5
+    I -->|Yes| J[Return Possible Causes and Recommended Steps]
+    I -->|No| K[Request More Details and Show General Guidance]
 
-Second Guess - Too High:
+    J --> L{Confidence below 60 percent?}
+    L -->|Yes| M[Display Low Confidence Warning]
+    L -->|No| N[Display Standard Investigation Report]
 
-User enters guess: "18"
+    M --> O[Save Investigation Log]
+    N --> O
+    K --> O
 
-Game returns hint: "Too High 📈 Go HIGHER!"
+    O --> P[Show Retrieval Source IDs]
+```
 
-Score decreases by 5 points
+## Project Structure
 
-Attempts left now shows: 4
+```text
+applied-ai-system-final/
+├── app.py
+├── glitch_retriever.py
+├── legacy_game.py
+├── logic_utils.py
+├── README.md
+├── model_card.md
+├── requirements.txt
+├── test_results.txt
+├── ai_interactions.md
+├── reflection.md
+├── assets/
+├── data/
+│   └── glitch_knowledge.json
+├── diagrams/
+│   └── architecture.mmd
+├── logs/
+│   ├── .gitkeep
+│   └── investigations.jsonl
+└── tests/
+    ├── test_game_logic.py
+    └── test_glitch_retriever.py
+```
 
-Third Guess - Correct!
+## Setup Instructions
 
-User enters guess: "15"
-
-Game returns: "Win 🎉 Correct!"
-
-Balloons appear on screen
-
-Score calculates: 80 points (100 - 10*(attempt_number+1))
-
-Game shows: "You won! The secret was 15. Final score: 80"
-
-New Game
-Starting Over:
-
-User clicks "New Game" button
-
-Game resets with a new secret number in the same difficulty range
-
-Attempts reset to 0
-
-Score resets to 0
-
-Invalid Input Handling
-Invalid Input:
-
-User guesses "abc"
-
-Game returns error: "That is not a number"
-
-No score change, no attempt counted
-## 🧪 Test Results
-
-All tests passed successfully:
-============= test session starts ==============
-platform darwin -- Python 3.13.3, pytest-9.1.0, pluggy-1.6.0
-rootdir: /Users/wafaalzahrani/Desktop/GameGlitch
-collected 13 items
-
-tests/test_game_logic.py::test_get_range_for_difficulty_easy PASSED [ 7%]
-tests/test_game_logic.py::test_get_range_for_difficulty_normal PASSED [ 15%]
-tests/test_game_logic.py::test_get_range_for_difficulty_hard PASSED [ 23%]
-tests/test_game_logic.py::test_check_guess_too_high PASSED [ 30%]
-tests/test_game_logic.py::test_check_guess_too_low PASSED [ 38%]
-tests/test_game_logic.py::test_check_guess_win PASSED [ 46%]
-tests/test_game_logic.py::test_update_score_win PASSED [ 53%]
-tests/test_game_logic.py::test_update_score_too_high_no_negative PASSED [ 61%]
-tests/test_game_logic.py::test_update_score_too_low_no_negative PASSED [ 69%]
-tests/test_game_logic.py::test_parse_guess_valid_number PASSED [ 76%]
-tests/test_game_logic.py::test_parse_guess_decimal PASSED [ 84%]
-tests/test_game_logic.py::test_parse_guess_non_number PASSED [ 92%]
-tests/test_game_logic.py::test_parse_guess_empty PASSED [100%]
-
-============== 13 passed in 0.10s ==============
-### Test Results Summary
-
-| Status | Count |
-|--------|-------|
-| ✅ PASSED | 13 tests |
-| ❌ FAILED | 0 tests |
-| ⏱️ Time | 0.10 seconds |
-
-### What the Tests Verify
-
-| Test Category | What It Tests | Status |
-|---------------|---------------|--------|
-| `get_range_for_difficulty` | Difficulty ranges (Easy: 1-20, Normal: 1-100, Hard: 1-50) | ✅ PASSED |
-| `check_guess` | Correct guess returns "Win", wrong guesses return "Too High"/"Too Low" | ✅ PASSED |
-| `update_score` | Score calculation and prevention of negative scores | ✅ PASSED |
-| `parse_guess` | Handling of valid numbers, decimals, non-numbers, and empty input | ✅ PASSED |
-
-## 🔧 How to Run Tests
-
-To run the tests yourself:
+### 1. Clone the repository
 
 ```bash
-# Install pytest
-pip install pytest
+git clone https://github.com/wafa-mz/applied-ai-system-final.git
+```
 
-# Run all tests
-python -m pytest tests/ -v
+### 2. Enter the project folder
 
-# Run specific test file
-python -m pytest tests/test_game_logic.py -v
-## 📁 Project Structure
-GameGlitch/
-├── app.py # Main Streamlit application
-├── logic_utils.py # Game logic functions (refactored)
-├── tests/
-│ └── test_game_logic.py # Pytest test suite (13 passing)
-├── reflection.md # Project reflection
-├── README.md # This file
-├── requirements.txt # Python dependencies
-├── ai_interactions.md # AI interaction log
-└── .gitignore # Git ignore file
+```bash
+cd applied-ai-system-final
+```
 
-## 📚 Reflection
+### 3. Install the required packages
 
-Working on this project taught me several important lessons about AI-generated code:
+```bash
+python3 -m pip install -r requirements.txt
+```
 
-1. **AI Code Looks Correct But Can Be Wrong**: The code ran without syntax errors but had serious logic bugs that only showed up during gameplay
+The main dependencies are:
 
-2. **Testing is Essential**: Pytest tests helped verify each fix worked correctly and prevented regressions
+```text
+streamlit==1.58.0
+pytest
+```
 
-3. **Session State Matters**: Streamlit's session state persists across reruns and difficulty changes, requiring careful management
+### 4. Run the application
 
-4. **AI is a Tool**: AI suggestions need to be reviewed and verified; they're not always correct
+```bash
+python3 -m streamlit run app.py
+```
 
-5. **Documentation Helps**: Clear FIXME comments and reflections help track what was fixed and why
+Streamlit should open the application in a browser. The local address will usually be:
 
-6. **Refactoring Benefits**: Separating logic from UI code makes testing and debugging significantly easier
+```text
+http://localhost:8501
+```
 
-## 🎯 Summary of Fixes
+### 5. Stop the application
 
-| Bug | Original Behavior | Fixed Behavior |
-|-----|-------------------|----------------|
-| Secret Range | Secret was 53 on Easy (1-20 range) | Secret is always within difficulty range |
-| Attempts Counter | Showed 1 instead of 6 on Easy | Shows correct number of attempts |
-| Score | Went negative (-15) | Stays at 0 or above |
-| Info Box | Always showed "1-100" | Shows correct difficulty range |
-| Tests | No tests existed | 13 passing tests |
+Return to the terminal and press:
+
+```text
+Control + C
+```
+
+## How to Use the Application
+
+1. Select a gaming platform.
+2. Enter a detailed description of the glitch.
+3. Click **Investigate Glitch**.
+4. Review the category and confidence score.
+5. Read the possible causes.
+6. Follow the recommended steps carefully.
+7. Open **Retrieval details** to see which knowledge-base records were used.
+
+Users should not enter passwords, account credentials, private server addresses, or other sensitive information.
+
+## Sample Interactions
+
+### Example 1: Game crashes during launch
+
+#### Input
+
+```text
+Platform: PC
+
+Description:
+My game crashes every time I launch it and closes to the desktop.
+```
+
+#### Output
+
+```text
+Investigation Report
+
+Issue category: Crashing
+Confidence: 100%
+
+Possible cause:
+The game files may be corrupted or an update may be missing.
+
+Recommended steps:
+1. Restart the game and gaming device.
+2. Install available game and system updates.
+3. Verify the game files through the official launcher if available.
+4. Temporarily disable unsupported modifications.
+
+Knowledge-base records used: [2]
+```
+
+### Example 2: Multiplayer disconnection
+
+#### Input
+
+```text
+Platform: PlayStation
+
+Description:
+I keep disconnecting from multiplayer matches and getting a timeout.
+```
+
+#### Output
+
+```text
+Investigation Report
+
+Issue category: Network
+Confidence: 100%
+
+Possible cause:
+The network connection may be unstable or the game server may be unavailable.
+
+Recommended steps:
+1. Check whether the game servers are online.
+2. Restart the game and router.
+3. Use a wired connection when possible.
+4. Pause downloads and streaming on other devices.
+
+Knowledge-base records used: [4]
+```
+
+### Example 3: Unsupported or unclear problem
+
+#### Input
+
+```text
+Platform: PC
+
+Description:
+A strange symbol appears only after opening a hidden menu in the game.
+```
+
+#### Output
+
+```text
+Investigation Report
+
+Issue category: Unknown
+Confidence: 20%
+
+Possible causes:
+No matching cause was found.
+
+Recommended steps:
+1. Provide the exact error message.
+2. Include the game title and platform.
+3. Explain when the problem started.
+4. Describe any recent updates or modifications.
+
+Warning:
+There was not enough information to provide a reliable diagnosis.
+
+Knowledge-base records used: []
+```
+
+## Guardrail Examples
+
+### Empty input
+
+#### Input
+
+```text
+Platform: PC
+Description:
+```
+
+#### Result
+
+```text
+Please describe the game glitch.
+```
+
+The system rejects the input and does not attempt to produce a diagnosis.
+
+### Description that is too short
+
+#### Input
+
+```text
+Platform: PC
+Description: It lags
+```
+
+#### Result
+
+```text
+Please provide more details about the glitch.
+```
+
+This guardrail helps prevent vague or misleading diagnoses.
+
+## Logging
+
+Completed investigations are written to:
+
+```text
+logs/investigations.jsonl
+```
+
+Each entry can include:
+
+- Timestamp
+- Platform
+- User description
+- Completion status
+- Predicted category
+- Confidence score
+- Retrieved knowledge-base source IDs
+
+Example log structure:
+
+```json
+{
+  "timestamp": "2026-08-04T21:42:00",
+  "platform": "PC",
+  "description": "My game crashes every time I launch it and closes to the desktop.",
+  "status": "complete",
+  "category": "crashing",
+  "confidence": 1.0,
+  "retrieved_source_ids": [2]
+}
+```
+
+## Reliability and Testing
+
+The system uses automated tests with `pytest`.
+
+Run the new glitch-investigation tests with:
+
+```bash
+python3 -m pytest tests/test_glitch_retriever.py -v
+```
+
+Observed result:
+
+```text
+collected 10 items
+10 passed in 0.08s
+```
+
+Run the complete repository test suite with:
+
+```bash
+python3 -m pytest -v
+```
+
+Observed result:
+
+```text
+collected 23 items
+23 passed in 0.10s
+```
+
+The complete output is committed in:
+
+```text
+test_results.txt
+```
+
+### Testing Summary
+
+All 10 new reliability tests passed. They verified:
+
+- Knowledge-base loading
+- Crashing classification
+- Network classification
+- Audio classification
+- Controller retrieval
+- Complete diagnosis generation
+- Empty-input rejection
+- Short-input rejection
+- Unknown-issue fallback behavior
+- Confidence-score boundaries
+
+The complete project suite passed 23 out of 23 tests.
+
+The system performed best when descriptions contained specific symptoms such as `crash`, `launch`, `disconnect`, `timeout`, `audio`, or `controller`. Vague or unsupported descriptions produced lower confidence and general fallback guidance instead of pretending to know the answer.
+
+## Design Decisions
+
+### Local JSON knowledge base
+
+I used a local JSON file because it is transparent, reproducible, and easy to inspect. A future employer or reviewer can see exactly which troubleshooting records influence the output.
+
+### Separate retrieval module
+
+The retrieval, classification, confidence, and diagnosis logic are placed in `glitch_retriever.py`. This keeps the Streamlit interface separate from the core system logic and makes the functions easier to test.
+
+### Confidence scoring
+
+The application displays a confidence score instead of presenting every answer as certain. Low-confidence results receive a warning and more general guidance.
+
+### Safe recommendations
+
+The knowledge base prioritizes low-risk troubleshooting steps. The system does not automatically delete files, change settings, download software, or access the user's device.
+
+### Preserve the original project
+
+The original application was retained as `legacy_game.py`. This shows how the final project evolved from the earlier module work without deleting the original implementation.
+
+## Trade-Offs
+
+The system uses keyword matching instead of a large embedding model or external API. This makes the project easy to run, inexpensive, private, and reproducible, but it also limits semantic understanding.
+
+The local knowledge base is small and manually created. This improves transparency but means the system may not recognize rare, game-specific, newly released, or unusually worded problems.
+
+The confidence score measures retrieval strength. It should not be interpreted as a guaranteed probability that the diagnosis is correct.
+
+## Limitations
+
+- The system cannot inspect the user's gaming device.
+- It cannot read game files, system logs, or network diagnostics.
+- It may miss synonyms that are not included in the knowledge base.
+- It does not currently search official support websites.
+- It cannot confirm whether a recommended step solved the problem.
+- It may provide general guidance for problems that require professional repair.
+- Its knowledge is limited to the records in the local JSON file.
+
+For responsible-AI details, biases, misuse risks, testing observations, and AI-collaboration reflection, see:
+
+```text
+model_card.md
+```
+
+## Reflection
+
+This project taught me that an applied AI system requires more than producing an answer. It needs organized data, validation, confidence handling, logging, tests, documentation, and clear limitations.
+
+I also learned that retrieval quality depends heavily on the words used in the user's description and the coverage of the knowledge base. Testing vague and unsupported inputs helped me improve the guardrails and fallback behavior instead of allowing the system to return an overconfident answer.
+
+## Reproducible Execution Evidence
+
+### Dependency installation
+
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+Observed output:
+
+```text
+Requirement already satisfied: streamlit==1.58.0
+Requirement already satisfied: pytest
+```
+
+### Streamlit version
+
+```bash
+python3 -m streamlit --version
+```
+
+Observed output:
+
+```text
+Streamlit, version 1.58.0
+```
+
+### Application launch
+
+```bash
+python3 -m streamlit run app.py
+```
+
+Observed output:
+
+```text
+You can now view your Streamlit app in your browser.
+
+Local URL: http://localhost:8501
+```
+
+### Complete test suite
+
+```bash
+python3 -m pytest -v
+```
+
+Observed output:
+
+```text
+collected 23 items
+23 passed in 0.10s
+```
+
+## Responsible AI Documentation
+
+The required responsible-AI reflection is located in:
+
+```text
+model_card.md
+```
+
+It discusses:
+
+- System limitations and biases
+- Possible misuse
+- Prevention measures
+- Reliability-testing observations
+- Collaboration with AI
+- One helpful AI suggestion
+- One flawed AI suggestion
+- Responsible-use guidance
+- Future improvements
+
+## Portfolio Reflection
+
+This project shows that I can take an earlier Python application and redesign it into a structured applied AI system. I integrated retrieval, classification, confidence scoring, logging, guardrails, automated testing, architecture documentation, and a professional Streamlit interface.
+
+It also demonstrates that I understand the importance of transparent system behavior, reproducible testing, human review, and responsible communication about AI limitations.
+
+## Repository
+
+GitHub repository:
+
+```text
+https://github.com/wafa-mz/applied-ai-system-final
+```
