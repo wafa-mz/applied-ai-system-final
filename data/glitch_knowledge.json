@@ -1,0 +1,100 @@
+[
+  {
+    "id": 1,
+    "category": "performance",
+    "platforms": ["PC"],
+    "keywords": ["low fps", "frame drops", "stutter", "lag", "slow"],
+    "possible_cause": "The graphics settings may be too demanding for the computer.",
+    "steps": [
+      "Lower the resolution or graphics preset.",
+      "Close unnecessary background applications.",
+      "Disable ray tracing or other demanding graphics features.",
+      "Update the graphics driver from the official manufacturer."
+    ],
+    "risk_level": "low"
+  },
+  {
+    "id": 2,
+    "category": "crashing",
+    "platforms": ["PC", "PlayStation", "Xbox", "Nintendo Switch"],
+    "keywords": ["crash", "crashing", "startup", "launch", "closes", "freezes"],
+    "possible_cause": "The game files may be corrupted or an update may be missing.",
+    "steps": [
+      "Restart the game and gaming device.",
+      "Install available game and system updates.",
+      "Verify the game files through the official launcher if available.",
+      "Temporarily disable unsupported modifications."
+    ],
+    "risk_level": "low"
+  },
+  {
+    "id": 3,
+    "category": "graphics",
+    "platforms": ["PC", "PlayStation", "Xbox", "Nintendo Switch"],
+    "keywords": ["black screen", "texture", "flickering", "visual glitch", "graphics"],
+    "possible_cause": "The display settings or graphics data may not be loading correctly.",
+    "steps": [
+      "Restart the game.",
+      "Check for game and system updates.",
+      "Reset the game's display settings.",
+      "Disable unofficial modifications."
+    ],
+    "risk_level": "low"
+  },
+  {
+    "id": 4,
+    "category": "network",
+    "platforms": ["PC", "PlayStation", "Xbox", "Nintendo Switch"],
+    "keywords": ["disconnect", "connection", "server", "multiplayer", "timeout", "ping"],
+    "possible_cause": "The network connection may be unstable or the game server may be unavailable.",
+    "steps": [
+      "Check whether the game servers are online.",
+      "Restart the game and router.",
+      "Use a wired connection when possible.",
+      "Pause downloads and streaming on other devices."
+    ],
+    "risk_level": "low"
+  },
+  {
+    "id": 5,
+    "category": "audio",
+    "platforms": ["PC", "PlayStation", "Xbox", "Nintendo Switch"],
+    "keywords": ["no sound", "audio", "voices", "crackling", "microphone"],
+    "possible_cause": "The wrong audio device may be selected or the connection may be interrupted.",
+    "steps": [
+      "Check the game's audio settings.",
+      "Confirm the correct output device is selected.",
+      "Reconnect the headset or speakers.",
+      "Restart the game."
+    ],
+    "risk_level": "low"
+  },
+  {
+    "id": 6,
+    "category": "save_data",
+    "platforms": ["PC", "PlayStation", "Xbox", "Nintendo Switch"],
+    "keywords": ["save", "progress", "corrupted", "missing data", "load"],
+    "possible_cause": "The save file may not have synchronized correctly.",
+    "steps": [
+      "Do not overwrite the existing save file.",
+      "Check the cloud synchronization status.",
+      "Confirm that you are signed into the correct account.",
+      "Create a backup before attempting recovery."
+    ],
+    "risk_level": "medium"
+  },
+  {
+    "id": 7,
+    "category": "controller",
+    "platforms": ["PC", "PlayStation", "Xbox", "Nintendo Switch"],
+    "keywords": ["controller", "button", "input", "drift", "joystick"],
+    "possible_cause": "The controller may be disconnected, incorrectly configured, or experiencing hardware drift.",
+    "steps": [
+      "Reconnect or pair the controller.",
+      "Restart the controller and gaming device.",
+      "Check the game's controller settings.",
+      "Test the controller in another game."
+    ],
+    "risk_level": "low"
+  }
+]
