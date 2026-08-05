@@ -1,0 +1,32 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.13.3, pytest-9.1.0, pluggy-1.6.0 -- /Library/Frameworks/Python.framework/Versions/3.13/bin/python3
+cachedir: .pytest_cache
+rootdir: /Users/wafaalzahrani/applied-ai-system-final
+plugins: anyio-4.14.0
+collecting ... collected 23 items
+
+tests/test_game_logic.py::test_get_range_for_difficulty_easy PASSED      [  4%]
+tests/test_game_logic.py::test_get_range_for_difficulty_normal PASSED    [  8%]
+tests/test_game_logic.py::test_get_range_for_difficulty_hard PASSED      [ 13%]
+tests/test_game_logic.py::test_check_guess_too_high PASSED               [ 17%]
+tests/test_game_logic.py::test_check_guess_too_low PASSED                [ 21%]
+tests/test_game_logic.py::test_check_guess_win PASSED                    [ 26%]
+tests/test_game_logic.py::test_update_score_win PASSED                   [ 30%]
+tests/test_game_logic.py::test_update_score_too_high_no_negative PASSED  [ 34%]
+tests/test_game_logic.py::test_update_score_too_low_no_negative PASSED   [ 39%]
+tests/test_game_logic.py::test_parse_guess_valid_number PASSED           [ 43%]
+tests/test_game_logic.py::test_parse_guess_decimal PASSED                [ 47%]
+tests/test_game_logic.py::test_parse_guess_non_number PASSED             [ 52%]
+tests/test_game_logic.py::test_parse_guess_empty PASSED                  [ 56%]
+tests/test_glitch_retriever.py::test_knowledge_base_loads PASSED         [ 60%]
+tests/test_glitch_retriever.py::test_crashing_issue_is_classified PASSED [ 65%]
+tests/test_glitch_retriever.py::test_network_issue_is_classified PASSED  [ 69%]
+tests/test_glitch_retriever.py::test_audio_issue_is_classified PASSED    [ 73%]
+tests/test_glitch_retriever.py::test_retrieval_returns_matching_record PASSED [ 78%]
+tests/test_glitch_retriever.py::test_complete_diagnosis_contains_recommendations PASSED [ 82%]
+tests/test_glitch_retriever.py::test_empty_input_is_rejected PASSED      [ 86%]
+tests/test_glitch_retriever.py::test_short_input_is_rejected PASSED      [ 91%]
+tests/test_glitch_retriever.py::test_unknown_detailed_issue_returns_limited_guidance PASSED [ 95%]
+tests/test_glitch_retriever.py::test_confidence_is_between_zero_and_one PASSED [100%]
+
+============================== 23 passed in 0.05s ==============================
